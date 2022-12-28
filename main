@@ -1,0 +1,35 @@
+import ccxt
+import talib
+
+# Use the ccxt library to retrieve data from an exchange
+exchange = ccxt.bitmex()
+
+# Set the trading pair (e.g. BTC/USD) and the time frame (e.g. 1 hour)
+pair = 'BTC/USD'
+time_frame = '1h'
+
+# Retrieve the price data from the exchange
+data = exchange.fetch_ohlcv(pair, time_frame)
+
+# Convert the data to a Pandas DataFrame and add a column for the RSI
+import pandas as pd
+df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+df['rsi'] = talib.RSI(df['close'], timeperiod=14)
+
+# Print the DataFrame to see the price and RSI data
+print(df)
+
+# Set the threshold levels for buying and selling
+buy_threshold = 30
+sell_threshold = 70
+
+# Check if the RSI is below the buy threshold or above the sell threshold
+if df['rsi'].iloc[-1] < buy_threshold:
+    # If the RSI is below the buy threshold, buy $100 of bitcoin
+    print(f'Buying $100 of bitcoin at {df["close"].iloc[-1]}')
+elif df['rsi'].iloc[-1] > sell_threshold:
+    # If the RSI is above the sell threshold, sell $100 of bitcoin
+    print(f'Selling $100 of bitcoin at {df["close"].iloc[-1]}')
+else:
+    # If the RSI is between the threshold levels, do nothing
+    print(f'No action taken. RSI is {df["rsi"].iloc[-1]}')
